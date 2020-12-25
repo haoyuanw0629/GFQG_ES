@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+
+    <script type="text/javascript" th:src="@{/script/jquery-3.5.1.js}"></script>
+    <script type="text/javascript" th:src="@{/script/jquery.form.js}"></script>
+    <link type="text/css" rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.css}">
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.js}"></script>
+    <link type="text/css" rel="stylesheet" th:href="@{/bootstrap/style.css}">
+    <title>ZCW</title>
+</head>
+
+<body>
+<!-- -----导航栏----- -->
+<div>
+    <nav class = "navbar navbar-default"  role = "navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand">ESTestWeb</a>
+            </div>
+            <div>
+                <ul class="nav navbar-nav">
+                    <li><a href="/" th:target="_self">网站首页</a></li>
+                    <li><a>隐私保护</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right gf-top-right">
+                    <li><a href="/user/signup" th:target="_self">注册用户</a></li>
+                    <li><a href="/user/" th:target="_self">登陆</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>
+<!-- -----搜索----- -->
+<div id="body-wrapper">
+    <div class="container">
+        <div>
+            <h1>广发证券量化精灵源码检索</h1>
+        </div>
+        <div class="search-bar">
+            <input  class="search-bar-input" th:type="text" th:id="keyword" th:name="keyword"
+                   placeholder="请输入搜索内容..."/>
+            <input type="submit" value="搜索" onclick="search(1)" class="search-btn">
+           <!-- <button type="button" onclick="reSearch()">重输</button> -->
+        </div>
+    </div>
+    <div class="container result">
+        <div id="file-card"></div>
+        <div id="page-selector"></div>
+    </div>
+</div>
+<!-- -----footer----- -->
+<div class="panel-footer footer" id="footer">
+    <p>© 2020 - ESTestWeb - <a>隐私保护</a>
+        Powered by ElasticSearch + SpringBoot + Linux.</p>
+</div>
+</body>
+
+
+<script type="application/javascript">
+
+    $(document).keyup(function (event) {
+        if(event.keyCode == 13){
+            var init = 1;
+            search(init);
+        }
+    });
+
+    function reSearch() {
+        $("#keyword").val("");
+    }
+    function search(page) {
+        //var pageNum = 0;
+        var keyword = $("#keyword").val();
+        var searchPath = "/esgf/search/"+keyword+"/"+(page-1);
+        if(localStorage.getItem("loginName") == null){
+            alert("请先登录");
+            window.location.href ="/user/";
+            return false
+        }
+        if(keyword == ""){
+            alert("搜索内容不能为空");
+            return false;
+        }
+        $.ajax({
+            url:searchPath,
+            type:"get",
+            dataType:"json",
+            contentType: "application/json",
+            async: false,
+            success:function callbackFun(res){
+                $('#file-card').children('div').remove();
+                $('#page-selector').children('span').remove();
+                $('#page-selector').children('button').remove();
+                for(var i=0;i<res.data.length;i++){
+                    var list = "<div class='file-desc'><div><span class='file-name'>"+res.data[i].fileName+"</span></div>"
+                              +"<div class='file-text'><p>"+res.data[i].fileContent+"</p></div>"
+                              +"<div><a>"+res.data[i].fileUrl+"</a></div></div>";
+                    $('#file-card').append(list);
+                }
+
+                for(var i=0;i<res.hits/6;i++){
+                    if(i>res.current+9){
+                        var pageNum = "<span class='btn btn-link'>...</span>";
+                        $('#page-selector').append(pageNum);
+                        break;
+                    } else if(i<res.current-2){
+                        $('#page-selector').children('span').remove();
+                        var pageNum = "<span class='btn btn-link'>...</span>";
+                        $('#page-selector').append(pageNum);
+                    } else {
+                        var pageNum = "<button class='btn btn-link' onclick='search(this.innerHTML)'>"+(i+1)+"</button>";
+                        $('#page-selector').append(pageNum);
+                    }
+                    //$('#page-selector').append(pageNum);
+                }
+                reloadfooter();
+            },
+            error:function(err){
+                localStorage.removeItem("loginName");
+                if(err.status==401){
+                    alert("请先登录");
+                    window.location.href ="/user/";
+                }
+            }
+        });
+    }
+    function min(a,b){
+        if(a-b<=0){
+            return a;
+        } else{
+            return b;
+        }
+    }
+    function reloadfooter(){
+        var footer = document.getElementById("footer");
+        footer.style.marginTop = '0px';
+    }
+</script>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <script type="text/javascript" th:src="@{/script/jquery-3.5.1.js}"></script>
+  <script type="text/javascript" th:src="@{/script/jquery.form.js}"></script>
+  <link type="text/css" rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.css}">
+  <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.js}"></script>
+  <link type="text/css" rel="stylesheet" th:href="@{/bootstrap/style.css}">
+  <title>用户注册</title>
+</head>
+<body>
+<!-- -----导航栏----- -->
+<div>
+  <nav class = "navbar navbar-default"  role = "navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <a class="navbar-brand">ESTestWeb</a>
+      </div>
+      <div>
+        <ul class="nav navbar-nav">
+          <li><a href="/" th:target="_self">网站首页</a></li>
+          <li><a>隐私保护</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right gf-top-right">
+          <li><a href="/user/signup" th:target="_self">注册用户</a></li>
+          <li><a href="/user/" th:target="_self">登陆</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</div>
+<!-- -----注册表单----- -->
+<div class="container">
+  <div>--说明性文字--</div>
+  <div class="login-title">
+    <h1>广发证券GFQG新用户注册</h1>
+  </div>
+  <div class="user-form">
+    <form id="loginPageForm" role="form">
+      <div class="form-group">
+        <label th:for="username">用户名:</label>
+        <input th:type="text" th:id="username"
+               th:name="username" th:class="form-control" />
+      </div>
+      <div class="form-group">
+        <label th:for="password">密码:</label>
+        <input th:type="password" th:id="password"
+               th:name="password" th:class="form-control"/>
+      </div>
+      <div class="form-group">
+        <label th:for="repassword">重复密码:</label>
+        <input th:type="password" th:id="repassword"
+               th:name="repassword" th:class="form-control" />
+      </div>
+      <button th:type="button" onclick="register()" class="btn btn-primary">注册</button>
+      <button th:type="button" onclick="cancelRegister()" class="btn btn-default">清空</button>
+    </form>
+  </div>
+  <!-- -----联系信息----- -->
+  <div class="contact">
+    <p>如果遇到系统问题，请联系网络管理员，联系电话：15632338272 </p>
+    <div>Copyright &copy 2020 GFQG量化研发组</div>
+  </div>
+</div>
+
+<!-- -----footer----- -->
+<div class="panel-footer footer">
+  <p>© 2020 - ESTestWeb - <a>隐私保护</a>
+    Powered by ElasticSearch + SpringBoot + Linux.</p>
+</div>
+</body>
+
+<script type="application/javascript">
+
+  $(document).keyup(function (event) {
+    if(event.keyCode == 13){
+      register();
+    }
+  });
+
+  function cancelRegister() {
+    $("#username").val("");
+    $("#password").val("");
+    $("#repassword").val("");
+  }
+  function register() {
+    var loginPath = "/user/register";
+    var userArray = {};
+    var username = $("#username").val();
+    var password = $("#password").val();
+    var repassword = $("#repassword").val();
+    if(username == ""){
+      alert("账号不能为空");
+      return false;
+    }
+    if(password == ""  ){
+      alert("密码不能为空");
+      return false;
+    }
+    if(password != repassword  ){
+      alert("密码不一致，请重新输入");
+      return false;
+    }
+
+    userArray["userID"]=null;
+    userArray["username"] = username;
+    userArray["password"] = password;
+    $.ajax({
+      url:loginPath,
+      type:"post",
+      dataType:"json",
+      contentType: "application/json",
+      async: false,
+      data:JSON.stringify(userArray),
+      success:function callbackFun(data){
+        //解析json
+        alert(data.responseDesc);
+        if(data.responseCode == 200){
+          userArray = {};
+          /*userArray["userId"] = data.userId;
+          userArray["accessToken"] = data.accessToken;*/
+          //localStorage.userId = data.userId;
+          //localStorage.accessToken = data.accessToken;
+          //localStorage.loginName = data.loginName;
+          window.location.href ="/user/";
+        }
+      },
+      error:function(data){
+        alert(data);
+      }
+    });
+  }
+</script>
+
+</html>
