@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
@@ -49,19 +50,38 @@ public class ESInitializer implements CommandLineRunner {
         esWenjian.setFileStrategyName(file.getName().substring(0,file.getName().length()-4));
         return esWenjian;
     }
+//    // 读取文件内容
+//    private String readFileContent(File file){
+//        String str = "";
+//        try {
+//            FileReader inputFile = new FileReader(file);
+//            char[] buffer = new char[(int) file.length()/2+1];
+//            inputFile.read(buffer);
+//            inputFile.close();
+//            str = String.valueOf(buffer);
+//            return str;
+//        } catch (IOException e) {
+//            System.out.println(e.fillInStackTrace());
+//            return null;
+//        }
+//    }
     // 读取文件内容
     private String readFileContent(File file){
-        String str = "";
-        try {
-            FileReader inputFile = new FileReader(file);
-            char[] buffer = new char[(int) file.length()/2+1];
-            inputFile.read(buffer);
-            inputFile.close();
-            str = String.valueOf(buffer);
-            return str;
-        } catch (IOException e) {
-            System.out.println(e.fillInStackTrace());
-            return null;
+    String str = "";
+    try {
+        FileInputStream inputFile = new FileInputStream(file);
+        byte[] buffer = new byte[(int) file.length()];
+        inputFile.read(buffer);
+        inputFile.close();
+        if(buffer[0]==-17&&buffer[1]==-69&&buffer[2]==-65){
+            str = new String(buffer, StandardCharsets.UTF_8);
+        } else {
+            str = new String(buffer,"GBK");
         }
+        return str;
+    } catch (IOException e) {
+        System.out.println(e.fillInStackTrace());
+        return null;
     }
+}
 }
