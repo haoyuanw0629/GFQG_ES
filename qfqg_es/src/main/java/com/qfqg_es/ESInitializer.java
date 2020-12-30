@@ -19,7 +19,8 @@ public class ESInitializer implements CommandLineRunner {
     @Override
     public void run(String... args){
         service.createFileIndex("qgsourcefile1");
-        String path = "/Users/mr.melo/Desktop/GFQG_ES项目/QG测试子文件夹";
+        String path = "/Users/mr.melo/Desktop/GFQG_ES项目/新测试文件夹/qgtestfile";
+//                "/Users/mr.melo/Desktop/GFQG_ES项目/QG测试子文件夹";
         File file = new File(path);
         func(file);
     }
@@ -50,21 +51,6 @@ public class ESInitializer implements CommandLineRunner {
         esWenjian.setFileStrategyName(file.getName().substring(0,file.getName().length()-4));
         return esWenjian;
     }
-//    // 读取文件内容
-//    private String readFileContent(File file){
-//        String str = "";
-//        try {
-//            FileReader inputFile = new FileReader(file);
-//            char[] buffer = new char[(int) file.length()/2+1];
-//            inputFile.read(buffer);
-//            inputFile.close();
-//            str = String.valueOf(buffer);
-//            return str;
-//        } catch (IOException e) {
-//            System.out.println(e.fillInStackTrace());
-//            return null;
-//        }
-//    }
     // 读取文件内容
     private String readFileContent(File file){
     String str = "";

@@ -17,6 +17,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -73,9 +75,8 @@ public class FileServiceImpl implements FileService {
                          .withPageable(PageRequest.of(pageNum, 6))
                          .withHighlightFields(
                                          new HighlightBuilder.Field("fileName").preTags("<em>").postTags("</em>"),
-                                         new HighlightBuilder.Field("fileContent").preTags("<em>").postTags("</em>")
+                                         new HighlightBuilder.Field("fileContent").preTags("<em>").postTags("</em>")//.fragmentSize(6)
                          ).build();
-
         SearchHits<EsFile> search = template.search(searchQuery, EsFile.class);
         // 得到查询结果返回的内容
         List<SearchHit<EsFile>> searchHits = search.getSearchHits();
@@ -85,25 +86,58 @@ public class FileServiceImpl implements FileService {
         for(SearchHit<EsFile> searchHit : searchHits){
             // 高亮的内容
             Map<String, List<String>> highLightFields = searchHit.getHighlightFields();
-            // 将高亮的内容填充到content中
-            searchHit.getContent().setFileName(highLightFields.get("fileName") == null ? searchHit.getContent().getFileName() : highLightFields.get("fileName").get(0));
-            searchHit.getContent().setFileContent(highLightFields.get("fileContent") == null ? searchHit.getContent().getFileContent() : highLightFields.get("fileContent").get(0));
+            //设置高亮内容
+            searchHit = setHighLightFields(searchHit,highLightFields);
             // 放到实体类中
-            //logger.info(searchHit.getContent().getFileName());
+            //logger.info();
             //searchHit.getContent().setFileSearchScore(searchHit.getScore());
             fileList.add(searchHit.getContent());
         }
         FileResponse result = new FileResponse();
         result.setData(fileList);
-        long hits = template.count(searchQuery, EsFile.class);
+        long hits = search.getTotalHits();
         logger.info("搜索结果数量："+hits);
         result.setHits(hits);
+        //result.setSearchTime();
         return result;
     }
-
+    //添加高亮文本
+    private SearchHit setHighLightFields(SearchHit<EsFile> searchHit
+            ,Map<String, List<String>> highLightFields){
+        searchHit.getContent().setFileName(highLightFields.get("fileName") == null ? searchHit.getContent().getFileName() : highLightFields.get("fileName").get(0));
+        if(highLightFields.get("fileContent")!=null&&searchHit.getContent().getFileType().equals("lua")){
+            searchHit.getContent().setHighLightFields("");
+            for(String field:highLightFields.get("fileContent")){
+                field = field.replaceAll("\r|\n| ", "");
+                searchHit.getContent().setHighLightFields(
+                        searchHit.getContent().getHighLightFields()+field);
+            }
+        } else if(highLightFields.get("fileContent")!=null&&searchHit.getContent().getFileType().equals("xml")){
+            searchHit.getContent().setHighLightFields("");
+            for(String field:highLightFields.get("fileContent")){
+                field = field.replaceAll("\r|\n| ", "");
+                searchHit.getContent().setHighLightFields(
+                        searchHit.getContent().getHighLightFields()+field);
+            }
+            //转义xml标签
+            String highLight = searchHit.getContent().getHighLightFields();
+            highLight = highLight.replaceAll("<","&lt;");
+            highLight = highLight.replaceAll(">","&gt;");
+            highLight = highLight.replaceAll("&lt;em&gt;","<em>");
+            highLight = highLight.replaceAll("&lt;/em&gt;","</em>");
+            searchHit.getContent().setHighLightFields(highLight);
+        }else {
+            searchHit.getContent().setHighLightFields(
+                    searchHit.getContent().getFileContent());
+        }
+        return searchHit;
+    }
+    /*
+    * 创建索引
+    * */
     public boolean createFileIndex(String indexName) {
-        // 判断索引是否存在，存在就先删除
-        if (isIndexExist(indexName)) deleteIndex(indexName);
+        // 判断索引是否存在，存在就返回true
+        if (isIndexExist(indexName)) return true;
         // 创建索引请求
         CreateIndexRequest indexRequest = new CreateIndexRequest(indexName);
         // 可选参数，备份2，碎片3

@@ -44,6 +44,9 @@ em{
     margin-top: 50px;
     margin-bottom: 50px;
 }
+.search-container{
+    margin-bottom: 5px;
+}
 .search-bar-input{
     margin:0px;
     padding:0px;
@@ -91,4 +94,8 @@ em{
     margin-bottom: 25px;
     border-bottom: #9d9d9d;
     border-bottom-width: 1px;
+}
+
+.result{
+    margin-top: 50px;
 }

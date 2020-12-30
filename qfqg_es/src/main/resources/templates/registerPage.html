@@ -39,6 +39,11 @@
   <div class="user-form">
     <form id="loginPageForm" role="form">
       <div class="form-group">
+        <label th:for="userid">账户:</label>
+        <input th:type="text" th:id="userid" disabled="disabled" value=" "
+               th:name="userid" th:class="form-control" />
+      </div>
+      <div class="form-group">
         <label th:for="username">用户名:</label>
         <input th:type="text" th:id="username"
                th:name="username" th:class="form-control" />
@@ -124,6 +129,29 @@
           //localStorage.accessToken = data.accessToken;
           //localStorage.loginName = data.loginName;
           window.location.href ="/user/";
+        }
+      },
+      error:function(data){
+        alert(data);
+      }
+    });
+  }
+  //页面加载时获取用户账号
+  $(document).ready(function(){
+    getid();
+  })
+  function getid() {
+    var idPath = "/user/newid";
+    $.ajax({
+      url:idPath,
+      type:"get",
+      dataType:"json",
+      contentType: "application/json",
+      async: false,
+      success:function callbackFun(data){
+        //解析json
+        if(data.responseCode == 200){
+          $("#userid").val(data.userId);
         }
       },
       error:function(data){

@@ -25,8 +25,8 @@
                     <li><a>隐私保护</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right gf-top-right">
-                    <li><a href="/user/signup" th:target="_self">注册用户</a></li>
-                    <li><a href="/user/" th:target="_self">登陆</a></li>
+                    <li><a id="user-name-li"></a></li>
+                    <li><a href="" onclick="logout()">退出</a></li>
                 </ul>
             </div>
         </div>
@@ -34,7 +34,7 @@
 </div>
 <!-- -----搜索----- -->
 <div id="body-wrapper">
-    <div class="container">
+    <div class="container search-container">
         <div>
             <h1>广发证券量化精灵源码检索</h1>
         </div>
@@ -45,6 +45,7 @@
            <!-- <button type="button" onclick="reSearch()">重输</button> -->
         </div>
     </div>
+    <div id="search-info" class="container"></div>
     <div class="container result">
         <div id="file-card"></div>
         <div id="page-selector"></div>
@@ -59,64 +60,78 @@
 
 
 <script type="application/javascript">
-
+    //回车搜索
     $(document).keyup(function (event) {
         if(event.keyCode == 13){
             var init = 1;
             search(init);
         }
     });
-
+    //清空搜索框内容
     function reSearch() {
         $("#keyword").val("");
     }
+    //搜索第page页内容
     function search(page) {
         //var pageNum = 0;
+        //清空当前搜索结果
+        $('#search-info').children('span').remove();
+        $('#file-card').children('div').remove();
+        $('#page-selector').children('span').remove();
+        $('#page-selector').children('button').remove();
+        //获取用户输入的关键字
         var keyword = $("#keyword").val();
+        //后台方法路径
         var searchPath = "/esgf/search/"+keyword+"/"+(page-1);
+        //校检用户输入以及用户登陆状态，若未登录则返回登录界面
         if(localStorage.getItem("loginName") == null){
             alert("请先登录");
             window.location.href ="/user/";
-            return false
+            return false;
         }
         if(keyword == ""){
             alert("搜索内容不能为空");
             return false;
         }
+        //使用ajax向后台发送请求
         $.ajax({
             url:searchPath,
             type:"get",
             dataType:"json",
             contentType: "application/json",
             async: false,
+            //搜索成功后返回函数
+            //res包含的属性：
             success:function callbackFun(res){
-                $('#file-card').children('div').remove();
-                $('#page-selector').children('span').remove();
-                $('#page-selector').children('button').remove();
+                //循环打印文件信息
                 for(var i=0;i<res.data.length;i++){
                     var list = "<div class='file-desc'><div><span class='file-name'>"+res.data[i].fileName+"</span></div>"
-                              +"<div class='file-text'><p>"+res.data[i].fileContent+"</p></div>"
+                              +"<div class='file-text' style='size: 200px'><p>"+res.data[i].highLightFields+"</p></div>"
                               +"<div><a>"+res.data[i].fileUrl+"</a></div></div>";
                     $('#file-card').append(list);
                 }
-
+                //搜索信息：结果数目，todo 用时
+                $('#search-info').append(
+                    "<span>共"+res.hits+"条结果</span>"
+                );
+                //分页按钮
+                $('#page-selector').append(
+                        "<button class='btn btn-link' onclick='search(1)'>首页</button>");
                 for(var i=0;i<res.hits/6;i++){
                     if(i>res.current+9){
-                        var pageNum = "<span class='btn btn-link'>...</span>";
-                        $('#page-selector').append(pageNum);
                         break;
-                    } else if(i<res.current-2){
-                        $('#page-selector').children('span').remove();
-                        var pageNum = "<span class='btn btn-link'>...</span>";
-                        $('#page-selector').append(pageNum);
+                    } else if(i<res.current-1){
+
                     } else {
                         var pageNum = "<button class='btn btn-link' onclick='search(this.innerHTML)'>"+(i+1)+"</button>";
                         $('#page-selector').append(pageNum);
                     }
                     //$('#page-selector').append(pageNum);
                 }
+                //用于根据页面内容调整页脚位置
                 reloadfooter();
             },
+            //搜索失败后返回函数
             error:function(err){
                 localStorage.removeItem("loginName");
                 if(err.status==401){
@@ -126,6 +141,7 @@
             }
         });
     }
+    //比较两数大小
     function min(a,b){
         if(a-b<=0){
             return a;
@@ -133,9 +149,41 @@
             return b;
         }
     }
+    //重载页脚
     function reloadfooter(){
         var footer = document.getElementById("footer");
         footer.style.marginTop = '0px';
     }
+    //用户登出
+    function logout(){
+        //后台登出方法路径
+        var logoutPath = "/user/logout";
+        //使用ajax向后台发送请求
+        $.ajax({
+            url:logoutPath,
+            type:"get",
+            dataType:"json",
+            contentType: "application/json",
+            async: false,
+            //若成功退出则删除本地存储的用户信息
+            success:function callbackFun(data){
+                //解析json
+                if(data.responseCode == 200){
+                    //删除用户信息
+                    localStorage.removeItem("loginName");
+                    window.location.href ="/user/";
+                }
+            },
+            //登出失败则提示错误信息
+            error:function(err){
+                alert(err);
+            }
+        });
+    }
+    //页面加载是调用，欢迎标语
+    $(document).ready(function(){
+        var username = localStorage.getItem("loginName");
+        $("#user-name-li").append("您好，"+username);
+    })
 </script>
 </html>

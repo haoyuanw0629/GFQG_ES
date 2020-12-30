@@ -7,6 +7,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import javax.persistence.Transient;
+import javax.transaction.Transactional;
 import java.io.Reader;
 import java.util.Date;
 
@@ -44,8 +46,6 @@ public class EsFile {
     @Field(type = FieldType.Text)
     //文件策略名
     private String fileStrategyName;
-
-
-
-
+    //高亮内容 TODO 不存入es
+    private String highLightFields;
 }

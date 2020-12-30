@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
+//@Service
 public class Top5ServiceImpl implements Top5Service {
     @Autowired
     private Top5Repository repo;

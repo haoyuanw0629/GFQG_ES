@@ -64,5 +64,22 @@ public class UserController {
         response.setResponseDesc(str);
         return response;
     }
+    @GetMapping("/newid")
+    @ResponseBody
+    public LoginResponse getNewID(){
+        LoginResponse res = new LoginResponse();
+        res.setResponseCode(ResponseCode.SUCCESS);
+        res.setUserId(service.getNewID());
+        return res;
+    }
+
+    @GetMapping("/logout")
+    @ResponseBody
+    public BaseResponse logout(HttpSession session){
+        session.removeAttribute("username");
+        BaseResponse res = new BaseResponse();
+        res.setResponseCode(ResponseCode.SUCCESS);
+        return res;
+    }
 
 }
