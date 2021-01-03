@@ -1,5 +1,14 @@
+.file-detail-name{}
+.file-detail-url{
+    font-size: medium;
+    color: #007bff;
+}
 .file-content{
+    margin-top: 50px;
     height: 1000px;
     width: 85%;
     overflow: scroll;
+    border-style: solid;
+    border-width: thin;
+    border-color: #8c8c8c;
 }

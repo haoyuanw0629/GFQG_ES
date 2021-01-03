@@ -21,9 +21,13 @@
 <body>
 <div class="container">
     <div th:each="file:${file}">
-        <div class="file-detail-name"><p th:text="${file.getFileStrategyName()}"></p></div>
+        <div class="file-detail-name"><h2 th:text="${file.getFileStrategyName()}"></h2></div>
         <div class="file-detail-url"><p th:text="${file.getFileUrl()}"></p></div>
-        <div class="file-content"><pre name="code" class="brush: xml" th:text="${file.getFileContent()}"></pre></div>
+        <div class="file-content" th:switch="${file.getFileType()}">
+            <div th:case="xml"><pre name="code" class="brush: xml" th:text="${file.getFileContent()}"></pre></div>
+            <div th:case="lua"><pre name="code" class="brush: lua" th:text="${file.getFileContent()}"></pre></div>
+        </div>
+
     </div>
 </div>
 
