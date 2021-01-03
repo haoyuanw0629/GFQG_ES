@@ -12,8 +12,10 @@
     <script type="text/javascript" th:src="@{/syntaxhighlighter/scripts/XRegExp.js}"></script>
     <script type="text/javascript" th:src="@{/syntaxhighlighter/scripts/shCore.js}"></script>
     <script type="text/javascript" th:src="@{/syntaxhighlighter/scripts/shBrushXml.js}"></script>
-    <script type="text/javascript" th:src="@{/syntaxhighlighter/scripts/shBrushJScript.js}"></script>
-
+    <script type="text/javascript" th:src="@{/syntaxhighlighter/scripts/shBrushLua.js}"></script>
+    <script type="text/javascript">
+        SyntaxHighlighter.all()
+    </script>
     <title>策略文件</title>
 </head>
 <body>
@@ -21,7 +23,7 @@
     <div th:each="file:${file}">
         <div class="file-detail-name"><p th:text="${file.getFileStrategyName()}"></p></div>
         <div class="file-detail-url"><p th:text="${file.getFileUrl()}"></p></div>
-        <div class="file-content"><pre class="xml" th:text="${file.getFileContent()}"></pre></div>
+        <div class="file-content"><pre name="code" class="brush: xml" th:text="${file.getFileContent()}"></pre></div>
     </div>
 </div>
 
