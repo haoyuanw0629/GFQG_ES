@@ -1,6 +1,7 @@
 
 package com.qfqg_es.controller;
 
+import com.qfqg_es.helper.CacheManager;
 import com.qfqg_es.helper.ResponseCode;
 import com.qfqg_es.model.EsFile;
 import com.qfqg_es.response.FileResponse;
@@ -12,7 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/esgf")
@@ -36,10 +39,13 @@ public class EsFileController {
         return response;
     }
 
-//    @GetMapping("/file/{id}")
-//    public ModelAndView fileDetails(@PathVariable("id") String id){
-//
-//    }
+    @GetMapping("/file/{id}")
+    public ModelAndView fileDetails(@PathVariable("id") String id){
+        EsFile esFile = service.getFileDetails(id);
+        Map<String, EsFile> map = new HashMap<>();
+        map.put(esFile.getFileName(), esFile);
+        return new ModelAndView("strategy", map);
+    }
 }
 
 
