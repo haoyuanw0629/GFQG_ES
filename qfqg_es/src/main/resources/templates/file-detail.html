@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" th:src="@{/script/jquery-3.5.1.js}"></script>
+    <script type="text/javascript" th:src="@{/script/jquery.form.js}"></script>
+    <link type="text/css" rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.css}">
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.js}"></script>
+    <link type="text/css" rel="stylesheet" th:href="@{/bootstrap/detail.css}">
+    <title>策略文件</title>
+</head>
+<body>
+<div class="container">
+    <div th:each="file:${file}">
+        <div class="file-detail-name"><p th:text="${file.getFileStrategyName()}"></p></div>
+        <div class="file-detail-url"><p th:text="${file.getFileUrl()}"></p></div>
+        <div class="file-content"><pre th:text="${file.getFileContent()}"></pre></div></div>
+</div>
+</div>
+
+</body>
+</html>

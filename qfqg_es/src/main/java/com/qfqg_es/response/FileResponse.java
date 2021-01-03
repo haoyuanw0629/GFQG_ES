@@ -10,6 +10,6 @@ public class FileResponse extends BaseResponse {
     private List<EsFile> data;
     private EsFile singleData;
     private long hits;
-    private int searchTime;
+    private long searchTime;
     private int current;
 }

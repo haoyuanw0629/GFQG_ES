@@ -27,7 +27,7 @@ public class SessionInterceptor implements HandlerInterceptor {
         logger.info("==========拦截请求==========");
         //权限路径拦截
         String uri = req.getRequestURI();
-        if(uri.contains("/script/")||uri.contains("/bootstrap/")){
+        if(uri.contains("/script/")||uri.contains("/bootstrap/")||uri.contains("/syntaxhighlighter/")){
             logger.info("==========放行静态资源==========");
             return true;
         }

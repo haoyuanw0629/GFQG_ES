@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,10 +31,12 @@ public class EsFileController {
     public FileResponse search(@PathVariable("keyword") String keyword,
                                        @PathVariable("pagenum") int pageNum){
         //TODO 完善功能
+        Date startTime = new Date();
         FileResponse response = service.highLightSearch(keyword,pageNum);
-
+        Date endTime = new Date();
         response.setResponseCode(ResponseCode.SUCCESS);
         response.setCurrent(pageNum);
+        response.setSearchTime(endTime.getTime() - startTime.getTime());
         return response;
     }
 
@@ -42,7 +45,7 @@ public class EsFileController {
         EsFile esFile = service.getFileDetails(id);
         Map<String, EsFile> map = new HashMap<>();
         model.addAttribute("file",esFile);
-        return "file";
+        return "file-detail";
     }
 }
 

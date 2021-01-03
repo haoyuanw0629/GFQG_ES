@@ -113,9 +113,9 @@
                     //为每一个文件名称添加url
                     document.getElementsByClassName("file-name")[i].setAttribute('href','/esgf/file/'+res.data[i].id);
                 }
-                //搜索信息：结果数目，todo 用时
+                //搜索信息：结果数目，搜索用时
                 $('#search-info').append(
-                    "<span>共"+res.hits+"条结果</span>"
+                    "<span>共"+res.hits+"条结果, 用时"+res.searchTime+"ms</span>"
                 );
                 //分页按钮
                 $('#page-selector').append(
