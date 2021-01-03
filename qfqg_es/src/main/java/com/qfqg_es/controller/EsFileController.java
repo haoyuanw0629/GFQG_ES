@@ -35,7 +35,11 @@ public class EsFileController {
         response.setCurrent(pageNum);
         return response;
     }
-    //临时注释
+
+//    @GetMapping("/file/{id}")
+//    public ModelAndView fileDetails(@PathVariable("id") String id){
+//
+//    }
 }
 
 

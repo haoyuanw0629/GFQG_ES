@@ -1,5 +1,6 @@
 package com.qfqg_es.service;
 
+import com.qfqg_es.helper.CacheManager;
 import com.qfqg_es.model.EsFile;
 import com.qfqg_es.repository.EsRepository;
 import com.qfqg_es.response.FileResponse;
@@ -17,7 +18,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-import org.joda.time.DateTime;
+import com.qfqg_es.helper.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,8 @@ public class FileServiceImpl implements FileService {
     private EsRepository repo;
     @Autowired
     private ElasticsearchRestTemplate template;
-
     private static final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+    private static final String cacheKey = "esHighlightSearch";
 
     @Qualifier("highLevelClient")
     @Autowired
@@ -65,8 +66,19 @@ public class FileServiceImpl implements FileService {
         return "Successfully added";
     }
 
+    //通过文件id搜索文件详细信息
+    public EsFile getFileDetails(String id){
+        Cache cache = CacheManager.getCacheInfo(FileServiceImpl.cacheKey);
+        if(cache == null){
+            return repo.findById(id).get();
+        } else {
+            return getFileFromCache(id);
+        }
+    }
+
     @Override
     public FileResponse highLightSearch(String keyword, Integer pageNum){
+        CacheManager.clearAll();//每次搜索之前清除缓存
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.multiMatchQuery(keyword, "fileName", "fileContent"))
                          //以修改时间排序（最近的在最前）
@@ -95,6 +107,7 @@ public class FileServiceImpl implements FileService {
         }
         FileResponse result = new FileResponse();
         result.setData(fileList);
+        cacheFile(fileList);//将搜索到的文件写入缓存
         long hits = search.getTotalHits();
         logger.info("搜索结果数量："+hits);
         result.setHits(hits);
@@ -256,6 +269,35 @@ public class FileServiceImpl implements FileService {
             System.out.println("===删除索引失败===");
             e.printStackTrace();
         }
+    }
+    /*
+    * 载入缓存
+    * */
+    private void cacheFile(List<EsFile> list){
+        String key = FileServiceImpl.cacheKey;
+        Cache cache= CacheManager.getCacheInfo(key);
+        if(cache == null){
+            cache = new Cache();
+            cache.setKey(key);
+            cache.setValue(list);
+            CacheManager.putCache(key, cache);
+            logger.info("文件载入缓存");
+        } else {
+            logger.warn("esHighlightSearch 未清理");
+        }
+    }
+    /*
+    * 从缓存中加载文件
+    * */
+    private EsFile getFileFromCache(String id){
+        Cache cache = CacheManager.getCacheInfo(FileServiceImpl.cacheKey);
+        List<EsFile> list = (List)cache.getValue();
+        for(EsFile file:list){
+            if(file.getId().equals(id)){
+                return file;
+            }
+        }
+        return null;
     }
 
 }
