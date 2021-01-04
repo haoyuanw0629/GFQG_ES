@@ -8,9 +8,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-//@Repository
+@Repository
 public interface Top5Repository extends CrudRepository<Keyword,Long>{
-//    @Query("select * from TopK order by searchedHits desc ,'limit' 5")
-      List<Keyword> findKeywordsBySearchedHitsAndLastDate();
+      @Query(value = "SELECT i FROM Keyword i ORDER BY i.searchedHits,i.lastDate DESC")
+      Optional<List<Keyword>> findAllOrderByHitsAndDate();
       Optional<Keyword> findByKeywordName(String keywordName);
+      boolean existsByKeywordName(String KeywordName);
 }

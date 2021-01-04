@@ -8,6 +8,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
   thymeleaf:
     enabled: true  #开启thymeleaf视图解析
     encoding: utf-8  #编码
