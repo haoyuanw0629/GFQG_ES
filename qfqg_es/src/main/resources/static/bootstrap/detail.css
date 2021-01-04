@@ -12,3 +12,6 @@
     border-width: thin;
     border-color: #8c8c8c;
 }
+.file-modified-date {
+    color: #8c8c8c;
+}

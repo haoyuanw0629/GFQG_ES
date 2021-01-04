@@ -13,16 +13,35 @@
     <script type="text/javascript" th:src="@{/syntaxhighlighter/scripts/shCore.js}"></script>
     <script type="text/javascript" th:src="@{/syntaxhighlighter/scripts/shBrushXml.js}"></script>
     <script type="text/javascript" th:src="@{/syntaxhighlighter/scripts/shBrushLua.js}"></script>
-    <script type="text/javascript">
-        SyntaxHighlighter.all()
-    </script>
+
     <title>策略文件</title>
 </head>
 <body>
+<div>
+    <nav class = "navbar navbar-default"  role = "navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand">ESTestWeb</a>
+            </div>
+            <div>
+                <ul class="nav navbar-nav">
+                    <li><a href="/" th:target="_self">网站首页</a></li>
+                    <li><a>隐私保护</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right gf-top-right">
+                    <li><a id="user-name-li"></a></li>
+                    <li><a href="" onclick="logout()">退出</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>
+
 <div class="container">
     <div th:each="file:${file}">
-        <div class="file-detail-name"><h2 th:text="${file.getFileStrategyName()}"></h2></div>
-        <div class="file-detail-url"><p th:text="${file.getFileUrl()}"></p></div>
+        <div class="file-detail-name"><h2 th:text="${file.getFileName()}"></h2></div>
+        <div class="file-detail-url"><span style="color: #0f0f0f">文件路径：</span><span th:text="${file.getFileUrl()}"></span></div>
+        <div class="file-modified-date"><span>最后修改于：</span><span th:text="${file.getFileModifiedDate()}"><span/></div>
         <div class="file-content" th:switch="${file.getFileType()}">
             <div th:case="xml"><pre name="code" class="brush: xml" th:text="${file.getFileContent()}"></pre></div>
             <div th:case="lua"><pre name="code" class="brush: lua" th:text="${file.getFileContent()}"></pre></div>
@@ -32,4 +51,38 @@
 </div>
 
 </body>
+<script type="text/javascript">
+    SyntaxHighlighter.all();
+    //用户登出
+    function logout(){
+        //后台登出方法路径
+        var logoutPath = "/user/logout";
+        //使用ajax向后台发送请求
+        $.ajax({
+            url:logoutPath,
+            type:"get",
+            dataType:"json",
+            contentType: "application/json",
+            async: false,
+            //若成功退出则删除本地存储的用户信息
+            success:function callbackFun(data){
+                //解析json
+                if(data.responseCode == 200){
+                    //删除用户信息
+                    localStorage.removeItem("loginName");
+                    window.location.href ="/user/";
+                }
+            },
+            //登出失败则提示错误信息
+            error:function(err){
+                alert(err);
+            }
+        });
+    }
+    //页面加载是调用，欢迎标语
+    $(document).ready(function(){
+        var username = localStorage.getItem("loginName");
+        $("#user-name-li").append("您好，"+username);
+    })
+</script>
 </html>
