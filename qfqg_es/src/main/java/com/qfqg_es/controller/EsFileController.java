@@ -5,6 +5,7 @@ import com.qfqg_es.helper.ResponseCode;
 import com.qfqg_es.model.EsFile;
 import com.qfqg_es.response.FileResponse;
 import com.qfqg_es.service.FileServiceImpl;
+import com.qfqg_es.service.Top5ServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ public class EsFileController {
 
     @Autowired
     private FileServiceImpl service;
+    @Autowired
+    private Top5ServiceImpl top5Service;
 
     private static final Logger logger = LoggerFactory.getLogger(EsFileController.class);
 
@@ -33,6 +36,7 @@ public class EsFileController {
         //TODO 完善功能
         Date startTime = new Date();
         FileResponse response = service.highLightSearch(keyword,pageNum);
+        top5Service.updateTopK(keyword);
         Date endTime = new Date();
         response.setResponseCode(ResponseCode.SUCCESS);
         response.setCurrent(pageNum);
