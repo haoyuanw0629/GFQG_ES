@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface Top5Repository extends CrudRepository<Keyword,Long>{
-      @Query(value = "SELECT i FROM Keyword i ORDER BY i.searchedHits,i.lastDate DESC")
+      @Query(value = "SELECT i FROM Keyword i ORDER BY i.searchedHits DESC, i.lastDate DESC")
       Optional<List<Keyword>> findAllOrderByHitsAndDate();
       Optional<Keyword> findByKeywordName(String keywordName);
       boolean existsByKeywordName(String KeywordName);

@@ -20,39 +20,42 @@ public class UserServiceImpl implements UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
+    /**
+     * 用户注册
+     * */
     @Override
-    //注册
     public String register(String username, String password) {
         if(username.isEmpty()||password.isEmpty()){
-            // TODO
-            return "username and password cannot be null" ;
+            return "用户名或密码不能为空" ;
         }
-        //TODO validation
-
+        if(password.length()<6){
+            return "密码长度不能少于6位";
+        }
         User user =new User(username,DigestUtils.md5DigestAsHex(password.getBytes()));
         if(repo.findByUsername(username).isPresent()){
-            return "username already exist, please rename";
+            return "用户名已存在";
         }
         repo.save(user);
-        return "successfully registered";
+        return "注册成功";
     }
 
     @Override
-    //登陆
+    /**
+     * 用户登录
+     * */
     public String login(String username, String password) {
         if(username.isEmpty()||password.isEmpty()) {
-            // TODO
-            return "username and password cannot be null";
+            return "用户名或密码不能为空";
         }
 
         if(!repo.findByUsername(username).isPresent()){
-            return "username not exists";
+            return "用户名不存在";
         }
         User user =repo.findByUsername(username).get();
         if(!DigestUtils.md5DigestAsHex(password.getBytes()).equals(user.getPassword())){
-            return "wrong password, please retype";
+            return "密码错误";
         }
-        return "successfully login";
+        return "登录成功";
     }
     //获取用户总数量转为账号
     public String getNewID(){

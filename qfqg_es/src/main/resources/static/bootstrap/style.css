@@ -99,3 +99,18 @@ em{
 .result{
     margin-top: 50px;
 }
+.keyword-row button{
+    font-size: large;
+}
+.keyword-row td{
+    width: 33%;
+}
+
+.keyword-table {
+    margin-top: 30px;
+    width: 80%;
+}
+
+#top-keyword{
+
+}

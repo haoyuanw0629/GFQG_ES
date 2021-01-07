@@ -6,20 +6,31 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class CacheManager {
-    private static HashMap cacheMap = new HashMap();
-    //单实例构造方法
-    private CacheManager() {
-        super();
+    private HashMap cacheMap;
+    public volatile static CacheManager cacheManager;
+    private CacheManager(){ }
+    private CacheManager(HashMap hashMap) {
+        this.cacheMap = hashMap;
+    }
+    public static CacheManager getCacheManager(){
+        if(cacheManager == null){
+            synchronized (CacheManager.class){
+                if(cacheManager == null){
+                    cacheManager = new CacheManager(new HashMap());
+                }
+            }
+        }
+        return cacheManager;
     }
     //获取布尔值的缓存
-    public static boolean getSimpleFlag(String key){
+    public boolean getSimpleFlag(String key){
         try{
             return (Boolean) cacheMap.get(key);
         }catch(NullPointerException e){
         }
         return false;
     }
-    public static long getServerStartdt(String key){
+    public long getServerStartdt(String key){
         try {
             return (Long)cacheMap.get(key);
         } catch (Exception ex) {
@@ -27,7 +38,7 @@ public class CacheManager {
         }
     }
     //设置布尔值的缓存
-    public synchronized static boolean setSimpleFlag(String key,boolean flag){
+    public synchronized boolean setSimpleFlag(String key,boolean flag){
         if (flag && getSimpleFlag(key)) {//假如为真不允许被覆盖
             return false;
         }else{
@@ -35,7 +46,7 @@ public class CacheManager {
             return true;
         }
     }
-    public synchronized static boolean setSimpleFlag(String key,long serverbegrundt){
+    public synchronized boolean setSimpleFlag(String key,long serverbegrundt){
         if (cacheMap.get(key) == null) {
             cacheMap.put(key,serverbegrundt);
             return true;
@@ -44,15 +55,15 @@ public class CacheManager {
         }
     }
     //得到缓存。同步静态方法
-    private synchronized static Cache getCache(String key) {
+    private synchronized Cache getCache(String key) {
         return (Cache) cacheMap.get(key);
     }
     //判断是否存在一个缓存
-    private synchronized static boolean hasCache(String key) {
+    private synchronized boolean hasCache(String key) {
         return cacheMap.containsKey(key);
     }
     //清除所有缓存
-    public synchronized static void clearAll() {
+    public synchronized void clearAll() {
         cacheMap.clear();
     }
 //    //清除某类一特定缓存,通过遍历HASHMAP下的所有对象，来判断它的KEY与传入的TYPE是否匹配
@@ -75,15 +86,15 @@ public class CacheManager {
 //        }
 //    }
     //清除指定的缓存
-    public synchronized static void clearOnly(String key) {
+    public synchronized void clearOnly(String key) {
         cacheMap.remove(key);
     }
     //载入缓存
-    public synchronized static void putCache(String key, Cache obj) {
+    public synchronized void putCache(String key, Cache obj) {
         cacheMap.put(key, obj);
     }
     //获取缓存信息
-    public static Cache getCacheInfo(String key) {
+    public Cache getCacheInfo(String key) {
         if (hasCache(key)) {
             Cache cache = getCache(key);
             if (cacheExpired(cache)) { //调用判断是否终止方法
@@ -96,7 +107,7 @@ public class CacheManager {
     }
 
     //载入缓存信息
-    public static void putCacheInfo(String key, Cache obj, long dt,boolean expired) {
+    public void putCacheInfo(String key, Cache obj, long dt,boolean expired) {
         Cache cache = new Cache();
         cache.setKey(key);
         cache.setTimeOut(dt + System.currentTimeMillis()); //设置多久后更新缓存
@@ -105,7 +116,7 @@ public class CacheManager {
         cacheMap.put(key, cache);
     }
     //重写载入缓存信息方法
-    public static void putCacheInfo(String key,Cache obj,long dt){
+    public void putCacheInfo(String key,Cache obj,long dt){
         Cache cache = new Cache();
         cache.setKey(key);
         cache.setTimeOut(dt+System.currentTimeMillis());
@@ -114,7 +125,7 @@ public class CacheManager {
         cacheMap.put(key,cache);
     }
     //判断缓存是否终止
-    public static boolean cacheExpired(Cache cache) {
+    public boolean cacheExpired(Cache cache) {
         if (null == cache) { //传入的缓存不存在
             return false;
         }
@@ -127,7 +138,7 @@ public class CacheManager {
         }
     }
     //获取缓存中的大小
-    public static int getCacheSize() {
+    public int getCacheSize() {
         return cacheMap.size();
     }
 //    //获取指定的类型的大小

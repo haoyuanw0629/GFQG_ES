@@ -25,36 +25,48 @@ public class UserController {
     @Autowired
     private UserServiceImpl service;
 
+    //返回登录页面
     @GetMapping("/")
     public ModelAndView toLogin(){
-
         return new ModelAndView("loginPage");
     }
+    //返回注册页面
     @GetMapping("/signup")
     public ModelAndView toRegister(){
-
         return new ModelAndView("registerPage");
     }
 
-    //TODO session
+    /**
+    * 用户登录
+    * @param： user：user对象
+    * @param： session：当前session
+    * @return：UserResponse对象
+    * */
     @PostMapping("/login")
     @ResponseBody
     public LoginResponse login(@RequestBody User user, HttpSession session){
         LoginResponse response = new LoginResponse();
+        //调用用户服务验证用户名以及密码，以字符串的形式返回登录结果
         String str = service.login(user.getUsername(), user.getPassword());
-        if(str.equals("successfully login")){
+        //如果登录成功，设置HttpSession
+        if(str.equals("登录成功")){
+            //为session新建一个名为"username"的属性，其值为用户名
             session.setAttribute("username",user.getUsername());
+            //设置session过期时间
             session.setMaxInactiveInterval(360);
             logger.info("登陆过期时间： "+session.getMaxInactiveInterval());
+            //封装response对象并返回
             response.setResponseCode(ResponseCode.SUCCESS);
             response.setResponseDesc(str);
             response.setLoginName(user.getUsername());
             return response;
         }
+        //以下为登录失败的操作，返回失败信息让前端进行后续跳转操作
         response.setResponseCode(ResponseCode.PARAMETER_ERROR);
         response.setResponseDesc(str);
         return response;
     }
+    //新用户注册
     @PostMapping("/register")
     @ResponseBody
     public BaseResponse register(@RequestBody User user){
@@ -64,6 +76,7 @@ public class UserController {
         response.setResponseDesc(str);
         return response;
     }
+    //获取用户ID
     @GetMapping("/newid")
     @ResponseBody
     public LoginResponse getNewID(){
@@ -72,7 +85,7 @@ public class UserController {
         res.setUserId(service.getNewID());
         return res;
     }
-
+    //用户退出，删除session中的用户信息
     @GetMapping("/logout")
     @ResponseBody
     public BaseResponse logout(HttpSession session){

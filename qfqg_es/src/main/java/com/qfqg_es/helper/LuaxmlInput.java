@@ -7,7 +7,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
+//未使用的类
+@Deprecated
 public class LuaxmlInput {
 
     public List<EsFile> readLuaXml(){

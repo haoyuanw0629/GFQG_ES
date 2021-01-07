@@ -47,10 +47,29 @@
         </div>
     </div>
 
-    <div id="top-keyword" class="container" th:each="key : ${list}">
-        <button class="btn btn-link" th:text="${key.keywordName}" onclick="searchkey(this.innerHTML)"></button>
+    <div id="top-keyword" class="container">
+        <table class="keyword-table">
+            <caption style="font-size: medium; color: red;padding-left: 1%">大家都在搜：</caption>
+          <tr class="keyword-row">
+              <td th:each="key,iter:${list}" th:if="${(iter.index)<3}">
+                  <button class="btn btn-link" th:text="${key.getKeywordName()}"
+                          onclick="searchkey(this.innerHTML)"></button>
+              </td>
+          </tr>
+          <tr class="keyword-row">
+              <td th:each="key,iter:${list}" th:if="${(iter.index)>=3 && (iter.index)<6}">
+                  <button class="btn btn-link" th:text="${key.getKeywordName()}"
+                          onclick="searchkey(this.innerHTML)"></button>
+              </td>
+          </tr>
+          <tr class="keyword-row">
+              <td th:each="key,iter:${list}" th:if="${(iter.index)>=6}">
+                  <button class="btn btn-link" th:text="${key.getKeywordName()}"
+                          onclick="searchkey(this.innerHTML)"></button>
+              </td>
+          </tr>
+        </table>
     </div>
-
     <div id="search-info" class="container"></div>
     <div class="container result">
         <div id="file-card"></div>

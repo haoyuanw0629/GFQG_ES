@@ -1,12 +1,13 @@
 package com.qfqg_es.model;
 
+import com.qfqg_es.param.Param;
 import lombok.Data;
 
 import javax.persistence.*;
 
 @Data
 @Entity
-@Table(name="gf_user")
+@Table(name= Param.USER_TABLE)
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long userID;

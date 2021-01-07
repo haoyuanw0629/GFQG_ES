@@ -1,5 +1,6 @@
 package com.qfqg_es.model;
 
+import com.qfqg_es.param.Param;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
@@ -13,7 +14,7 @@ import java.util.Date;
  * 2020/11/30
  */
 @Data
-@Document(indexName = "qgsourcefile1")
+@Document(indexName = Param.ES_INDEX_NAME)
 public class EsFile {
 
 

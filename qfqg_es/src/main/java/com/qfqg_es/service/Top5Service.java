@@ -6,9 +6,13 @@ import com.qfqg_es.model.Keyword;
 import java.util.List;
 
 public interface Top5Service {
-    //获取排名前5的关键字
+    /**
+     * 获取排名前9的关键字
+     * */
     List<Keyword> top5Search();
-    //创建或更新关键字
+    /**
+     * 更新关键字表
+     * */
     Keyword updateTopK(String keyword);
 
 }

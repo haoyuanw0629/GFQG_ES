@@ -1,8 +1,7 @@
-//回车搜索
+//按下回车键搜索
 $(document).keyup(function (event) {
     if(event.keyCode == 13){
-        var init = 1;
-        search(init);
+        search(1);
     }
 });
 //清空搜索框内容
@@ -11,12 +10,13 @@ function reSearch() {
 }
 //搜索第page页内容
 function search(page) {
-    //var pageNum = 0;
     //清空当前搜索结果
     $('#search-info').children('span').remove();
     $('#file-card').children('div').remove();
     $('#page-selector').children('span').remove();
     $('#page-selector').children('button').remove();
+    //清空topK列表
+    $('#top-keyword').children('table').remove();
     //获取用户输入的关键字
     var keyword = $("#keyword").val();
     //后台方法路径
@@ -24,6 +24,7 @@ function search(page) {
     //校检用户输入以及用户登陆状态，若未登录则返回登录界面
     if(localStorage.getItem("loginName") == null){
         alert("请先登录");
+        //重定向至登录页面
         window.location.href ="/user/";
         return false;
     }
@@ -58,7 +59,7 @@ function search(page) {
         }
     });
 }
-//搜索关键词
+//搜索关键词（topK）
 function searchkey(keyword){
     $('#keyword').val(keyword);
     search(1);
@@ -66,6 +67,7 @@ function searchkey(keyword){
 //循环打印文件内容
 function fileout(res){
     //循环打印文件信息
+    //对于返回结果中的每个文件，打印文件标题，高亮内容，路径
     for(var i=0;i<res.data.length;i++){
         var list = "<div class='file-desc'><div><a class='file-name' target='_blank'>"
             +res.data[i].fileName+"</a></div>"

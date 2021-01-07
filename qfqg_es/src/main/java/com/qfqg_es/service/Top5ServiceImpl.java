@@ -18,22 +18,28 @@ public class Top5ServiceImpl implements Top5Service {
 
     private static final Logger logger = LoggerFactory.getLogger(Top5ServiceImpl.class);
 
+    /**
+     * 获取排名前9的关键字
+     * */
     @Override
     public List<Keyword> top5Search() {
         List<Keyword> topKeys = new ArrayList<>();
         try{
             topKeys = top5Repository.findAllOrderByHitsAndDate().get();
             if(topKeys.size()>9){
-                return topKeys.subList(0,10);
+                return topKeys.subList(0,9);
             } else {
                 return topKeys;
             }
         } catch (Exception e){
-            logger.warn("热搜列表为空");
+            logger.warn("========== 热搜列表为空 ==========");
             return null;
         }
     }
 
+    /**
+     * 更新关键字表
+     * */
     @Override
     public Keyword updateTopK(String keyword) {
 

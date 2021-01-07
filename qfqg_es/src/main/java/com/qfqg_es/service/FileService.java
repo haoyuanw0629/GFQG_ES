@@ -7,18 +7,30 @@ import java.io.IOException;
 import java.util.List;
 
 public interface FileService {
-    //初始化
-    public String addAll();
+    /**
+     * 将本地所有文件插入Es
+     * */
+    @Deprecated
+    String addAll();
 
-    //插入数据
-    public String add(EsFile esFile);
+    /**
+     * 向Es中插入单个文件
+     * @param esFile 对象
+     * */
+    String add(EsFile esFile);
 
-    //搜索
-    public FileResponse highLightSearch(String keyword, Integer pageNum) throws Exception;
+    /**
+     * 高亮分页搜索
+     * @param keyword 关键字
+     * @param pageNum 第几页
+     * */
+    FileResponse highLightSearch(String keyword, Integer pageNum) throws Exception;
 
     //public void delete();
 
-    // Creat ES Index
-    public boolean createFileIndex(String indexName);
+    /**
+     * 创建Es索引
+     * */
+    boolean createFileIndex(String indexName);
 
 }

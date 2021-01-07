@@ -9,7 +9,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 @Component
-//就是拦截器
+/**
+ * session拦截器
+ * 拦截所有未在SessionConfig中放行的请求
+ * 放行static中的静态资源
+ * 对其他请求：检查session中是否存有用户信息，判断是否为以登录用户的请求
+ *           是则放行，否则返回401
+ * */
 public class SessionInterceptor implements HandlerInterceptor {
 
     private final static Logger logger = LoggerFactory.getLogger(SessionInterceptor.class);
@@ -24,19 +30,16 @@ public class SessionInterceptor implements HandlerInterceptor {
     }
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) throws Exception {
-        logger.info("==========拦截请求==========");
         //权限路径拦截
         String uri = req.getRequestURI();
         if(uri.contains("/script/")||uri.contains("/bootstrap/")||uri.contains("/syntaxhighlighter/")){
-            logger.info("==========放行静态资源==========");
             return true;
         }
         Object object = req.getSession().getAttribute("username");
-        logger.info("Session 用户名: " + object);
+        logger.info("请求用户名: " + object);
         if (object == null) {
             //logger.info("session is null");
             logger.info(uri);
-            logger.info("==========跳转==========");
             res.setStatus(401);
             res.sendRedirect("/user/");
             return false;

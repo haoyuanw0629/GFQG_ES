@@ -45,18 +45,26 @@ public class FileServiceImpl implements FileService {
     @Autowired
     private EsRepository repo;
     @Autowired
+    private CacheManager cacheManager;
+    @Autowired
     private ElasticsearchRestTemplate template;
     private static final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+    //缓存的唯一主键
     private static final String cacheKey = "esHighlightSearch";
 
     @Qualifier("highLevelClient")
     @Autowired
     private RestHighLevelClient client;
+
     @Override
     public String addAll() {
         return null;
     }
 
+    /**
+     * 向Es中插入单个文件
+     * @param esFile 对象
+     * */
     @Override
     public String add(EsFile esFile) {
         if(esFile==null){
@@ -66,19 +74,34 @@ public class FileServiceImpl implements FileService {
         return "Successfully added";
     }
 
-    //通过文件id搜索文件详细信息
+    /**
+     * 通过文件id获取文件详细信息
+     * @param id 文件id
+     * */
     public EsFile getFileDetails(String id){
-        Cache cache = CacheManager.getCacheInfo(FileServiceImpl.cacheKey);
+        //获取缓存
+        Cache cache = cacheManager.getCacheInfo(FileServiceImpl.cacheKey);
         if(cache == null){
+            //若缓存为空，则到es中查询
+            logger.info("========== 缓存失效，通过es查询文件内容 ==========");
             return repo.findById(id).get();
         } else {
+            //若缓存不为空，则在缓存中查询文件信息
+            logger.info("========== 从缓存中载入文件内容 ==========");
             return getFileFromCache(id);
         }
     }
 
+    /**
+     * 高亮分页搜索
+     * @param keyword 关键字
+     * @param pageNum 第几页
+     * */
     @Override
     public FileResponse highLightSearch(String keyword, Integer pageNum){
-        CacheManager.clearAll();//每次搜索之前清除缓存
+        //每次搜索之前清除缓存
+        cacheManager.clearAll();
+        //创建搜索用的Query
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.multiMatchQuery(keyword, "fileName", "fileContent"))
                          //以修改时间排序（最近的在最前）
@@ -89,6 +112,8 @@ public class FileServiceImpl implements FileService {
                                          new HighlightBuilder.Field("fileName").preTags("<em>").postTags("</em>"),
                                          new HighlightBuilder.Field("fileContent").preTags("<em>").postTags("</em>")//.fragmentSize(6)
                          ).build();
+        //使用ElasticSearchRestTemplate进行搜索
+        logger.info("========== 访问ElasticSearch ==========");
         SearchHits<EsFile> search = template.search(searchQuery, EsFile.class);
         // 得到查询结果返回的内容
         List<SearchHit<EsFile>> searchHits = search.getSearchHits();
@@ -101,23 +126,28 @@ public class FileServiceImpl implements FileService {
             //设置高亮内容
             searchHit = setHighLightFields(searchHit,highLightFields);
             // 放到实体类中
-            //logger.info();
             //searchHit.getContent().setFileSearchScore(searchHit.getScore());
             fileList.add(searchHit.getContent());
         }
+        //定义一个response实例并将搜索到的文件添加到实例当中
         FileResponse result = new FileResponse();
         result.setData(fileList);
-        cacheFile(fileList);//将搜索到的文件写入缓存
+        //将搜索到的文件写入缓存
+        logger.info("========== 搜索结束，搜索结果写入缓存 ==========");
+        cacheFile(fileList);
+        //获取搜索到的总结果数量 并添加到response实例中
         long hits = search.getTotalHits();
         logger.info("搜索结果数量："+hits);
         result.setHits(hits);
-        //result.setSearchTime();
         return result;
     }
-    //添加高亮文本
+    /**
+     * 添加高亮文本
+     * */
     private SearchHit setHighLightFields(SearchHit<EsFile> searchHit
             ,Map<String, List<String>> highLightFields){
         searchHit.getContent().setFileName(highLightFields.get("fileName") == null ? searchHit.getContent().getFileName() : highLightFields.get("fileName").get(0));
+
         if(highLightFields.get("fileContent")!=null&&searchHit.getContent().getFileType().equals("lua")){
             searchHit.getContent().setHighLightFields("");
             for(String field:highLightFields.get("fileContent")){
@@ -145,12 +175,13 @@ public class FileServiceImpl implements FileService {
         }
         return searchHit;
     }
-    /*
+    /**
     * 创建索引
     * */
     public boolean createFileIndex(String indexName) {
         // 判断索引是否存在，存在就返回true
         if (isIndexExist(indexName)) return true;
+        logger.info("===== 创建新索引 =====");
         // 创建索引请求
         CreateIndexRequest indexRequest = new CreateIndexRequest(indexName);
         // 可选参数，备份2，碎片3
@@ -193,15 +224,6 @@ public class FileServiceImpl implements FileService {
                         "         }\n"+
                         "       }\n" +
                         "    },\n" +
-//                        "    \"FileSearchScore\": {\n" +
-//                        "      \"type\": \"double\",\n" +
-//                        "      \"fields\": {\n"+
-//                        "         \"keyword\" : {\n"+
-//                        "           \"type\" :\"keyword\",\n"+
-//                        "           \"ignore_above\" : 256\n"+
-//                        "         }\n"+
-//                        "       }\n"+
-//                        "    },\n" +
                         "    \"FileModifiedDate\": {\n" +
                         "      \"type\": \"date\",\n" +
                         "      \"fields\": {\n"+
@@ -242,15 +264,35 @@ public class FileServiceImpl implements FileService {
             System.out.println("---创建ES索引失败---");
             e.printStackTrace();
         }
+        logger.info("===== 索引创建完毕 =====");
         return true;
     }
-    private boolean isIndexExist(String index) {
+    /**
+     * 检查给定索引是否已存在
+     * */
+    public boolean isIndexExist(String index) {
         GetIndexRequest request = new GetIndexRequest(index);
         try {
             boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
             if (exists) return true;
         } catch (IOException e) {
-            System.out.println("===判断索引是否存在请求失败");
+            System.out.println("===判断索引是否存在请求失败===");
+            e.printStackTrace();
+        }
+        return false;
+    }
+    /**
+     * 判断索引是否为jpa自动创建
+     * */
+    public boolean isAutoCreated(String index) {
+        GetIndexRequest request = new GetIndexRequest(index);
+        try {
+            String setting = client.indices().get(request, RequestOptions.DEFAULT)
+                    .getSetting(index,"index.number_of_shards");
+            if(setting.equals("1")) return true;
+
+        } catch (IOException e) {
+            System.out.println("===判断失败===");
             e.printStackTrace();
         }
         return false;
@@ -260,7 +302,7 @@ public class FileServiceImpl implements FileService {
      * 删除索引
      * @param indexName
      */
-    private void deleteIndex(String indexName) {
+    public void deleteIndex(String indexName) {
         DeleteIndexRequest request = new DeleteIndexRequest(indexName);
         request.timeout("2m");
         try {
@@ -269,28 +311,29 @@ public class FileServiceImpl implements FileService {
             System.out.println("===删除索引失败===");
             e.printStackTrace();
         }
+        logger.info("===== 索引已删除 =====");
     }
-    /*
-    * 载入缓存
+
+    /**
+    * 将文件写入缓存
     * */
     private void cacheFile(List<EsFile> list){
         String key = FileServiceImpl.cacheKey;
-        Cache cache= CacheManager.getCacheInfo(key);
+        Cache cache= cacheManager.getCacheInfo(key);
         if(cache == null){
             cache = new Cache();
             cache.setKey(key);
             cache.setValue(list);
-            CacheManager.putCache(key, cache);
-            logger.info("文件载入缓存");
+            cacheManager.putCache(key, cache);
         } else {
             logger.warn("esHighlightSearch 未清理");
         }
     }
-    /*
+    /**
     * 从缓存中加载文件
     * */
     private EsFile getFileFromCache(String id){
-        Cache cache = CacheManager.getCacheInfo(FileServiceImpl.cacheKey);
+        Cache cache = cacheManager.getCacheInfo(FileServiceImpl.cacheKey);
         List<EsFile> list = (List)cache.getValue();
         for(EsFile file:list){
             if(file.getId().equals(id)){

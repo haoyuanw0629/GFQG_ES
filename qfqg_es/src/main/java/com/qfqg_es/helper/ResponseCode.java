@@ -1,5 +1,8 @@
 package com.qfqg_es.helper;
 
+/**
+ * 返回信息码
+* */
 public class ResponseCode {
     /**
      * 表示返回成功

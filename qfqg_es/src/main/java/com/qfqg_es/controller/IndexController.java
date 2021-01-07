@@ -18,8 +18,12 @@ public class IndexController {
     @Autowired
     private Top5ServiceImpl top5Service;
 
+    /**返回主页
+     *参数Model：用于向返回的页面中添加数据
+     * */
     @GetMapping("/")
     public String index(Model model){
+        //进入主页时调用topK服务获取当前排名最高的关键字
         List<Keyword> list = top5Service.top5Search();
         model.addAttribute("list",list);
         return "index";
