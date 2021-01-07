@@ -15,6 +15,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -103,14 +104,13 @@ public class FileServiceImpl implements FileService {
         cacheManager.clearAll();
         //创建搜索用的Query
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(QueryBuilders.multiMatchQuery(keyword, "fileName", "fileContent"))
+                .withQuery(QueryBuilders.matchQuery("fileContent", keyword))
                          //以修改时间排序（最近的在最前）
                          //.withSort(SortBuilders.fieldSort("fileModifiedDate").order(SortOrder.DESC))
                          //.withSort(SortBuilders.fieldSort("fileSearchScore").order(SortOrder.DESC))
                          .withPageable(PageRequest.of(pageNum, 6))
                          .withHighlightFields(
-                                         new HighlightBuilder.Field("fileName").preTags("<em>").postTags("</em>"),
-                                         new HighlightBuilder.Field("fileContent").preTags("<em>").postTags("</em>")//.fragmentSize(6)
+                                 new HighlightBuilder.Field("fileContent").preTags("<em>").postTags("</em>")//.fragmentSize(6)
                          ).build();
         //使用ElasticSearchRestTemplate进行搜索
         logger.info("========== 访问ElasticSearch ==========");
@@ -146,7 +146,6 @@ public class FileServiceImpl implements FileService {
      * */
     private SearchHit setHighLightFields(SearchHit<EsFile> searchHit
             ,Map<String, List<String>> highLightFields){
-        searchHit.getContent().setFileName(highLightFields.get("fileName") == null ? searchHit.getContent().getFileName() : highLightFields.get("fileName").get(0));
 
         if(highLightFields.get("fileContent")!=null&&searchHit.getContent().getFileType().equals("lua")){
             searchHit.getContent().setHighLightFields("");
@@ -197,8 +196,8 @@ public class FileServiceImpl implements FileService {
                         "  \"properties\": {\n" +
                         "    \"FileName\": {\n" +
                         "      \"type\": \"text\",\n" +
-                        "      \"analyzer\": \"ik_max_word\",\n"+
-                        "       \"search_analyzer\": \"ik_smart\",\n"+
+                        //"      \"analyzer\": \"ik_max_word\",\n"+
+                        //"       \"search_analyzer\": \"ik_smart\",\n"+
                         "      \"fields\": {\n"+
                         "         \"keyword\" : {\n"+
                         "           \"type\" :\"keyword\",\n"+
@@ -311,7 +310,7 @@ public class FileServiceImpl implements FileService {
             System.out.println("===删除索引失败===");
             e.printStackTrace();
         }
-        logger.info("===== 索引已删除 =====");
+        logger.info("===== JPA默认索引已删除 =====");
     }
 
     /**

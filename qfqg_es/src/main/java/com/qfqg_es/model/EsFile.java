@@ -21,7 +21,7 @@ public class EsFile {
     @Id
     private String id;
     // 文件名
-    @Field(type= FieldType.Text,analyzer = "ik_max_word",searchAnalyzer = "ik_smart")
+    @Field(type= FieldType.Text)
     private String fileName;
     // 文件路径
     @Field(type = FieldType.Text)
