@@ -73,9 +73,6 @@ public class EsFileController {
     @GetMapping("/file/{id}")
     public String fileDetails(@PathVariable("id") String id, Model model){
         EsFile esFile = service.getFileDetails(id);
-        //去掉文件名中的高亮标签
-        String filename = esFile.getFileName().replaceAll("<em>","");
-        esFile.setFileName(filename.replaceAll("</em>",""));
         //设置返回页面的数据，数据名称为"file"，集体数据为EsFile对象
         model.addAttribute("file",esFile);
         return "file-detail";
