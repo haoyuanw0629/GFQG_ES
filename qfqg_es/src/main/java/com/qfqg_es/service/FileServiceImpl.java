@@ -135,6 +135,7 @@ public class FileServiceImpl implements FileService {
         //将搜索到的文件写入缓存
         logger.info("========== 搜索结束，搜索结果写入缓存 ==========");
         cacheFile(fileList);
+        logger.info("========== 缓存载入完毕 ==========");
         //获取搜索到的总结果数量 并添加到response实例中
         long hits = search.getTotalHits();
         logger.info("搜索结果数量："+hits);

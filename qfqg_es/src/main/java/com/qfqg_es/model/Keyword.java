@@ -9,6 +9,7 @@ import java.util.Date;
 
 @Data
 @Entity
+@Table(name= "why_keyword")
 public class Keyword {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long KeywordId;
