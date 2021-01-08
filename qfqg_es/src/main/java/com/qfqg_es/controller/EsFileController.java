@@ -43,9 +43,13 @@ public class EsFileController {
             //记录调用es服务前的时间
             Date startTime = new Date();
             //调用es服务
+            logger.info("========== 调用ES搜索 ==========");
             FileResponse response = service.highLightSearch(keyword,pageNum);
+            logger.info("========== 搜索结束 ==========");
             //记录本次搜索的关键字并更新关键字表
+            logger.info("========== 更新关键字表 ==========");
             top5Service.updateTopK(keyword);
+            logger.info("=========== 关键字更新完毕 ==========");
             //记录es搜索结束的时间
             Date endTime = new Date();
             //封装要返回到前端的response对象
